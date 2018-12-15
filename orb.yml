@@ -1,0 +1,136 @@
+version: 2.1
+
+description: Orb for building and testing rebar3 projects
+
+examples:
+  common_tests:
+    description: Run common test suites of project
+    usage:
+      version: 2.1
+
+      orbs:
+        rebar3: tsloughter/rebar3@0.1.0
+
+      workflows:
+        build-test:
+          jobs:
+            - rebar3/compile
+            - rebar3/ct:
+                requires:
+                  - rebar3/compile
+
+executors:
+  docker-erlang:
+    parameters:
+      version:
+        type: string
+        default: "21.2-alpine"
+    docker:
+      - image: erlang:<<parameters.version>>
+        entrypoint: ["/bin/sh"]
+
+commands:
+  install_ca_certs:
+    steps:
+      - run:
+          command: apk add --no-cache ca-certificates
+  restore_deps:
+    steps:
+      - restore_cache:
+          keys:
+            - rebar-lock-{{ checksum "rebar.lock" }}
+            - hex-packages
+  save_deps:
+    steps:
+      - save_cache:
+          key: rebar-lock-{{ checksum "rebar.lock" }}
+          paths:
+            - ~/project/_build/default/lib
+            - ~/project/_build/default/plugins
+
+      - save_cache:
+          key: hex-packages
+          paths:
+            - ~/.cache/rebar3/hex/default/packages
+
+  store_crash_artifacts:
+    parameters:
+      cmd:
+        description: unique name, like the command that is running, in case there are multiple dumps
+        type: string
+    steps:
+      - store_artifacts:
+          path: ~/project/rebar3.crashdump
+          destination: <<parameters.cmd>>_rebar3_crashdump.txt
+          when: on_fail
+
+  compile:
+    steps:
+      - install_ca_certs
+      - checkout
+      - restore_deps
+      - run:
+          command: rebar3 compile
+      - store_crash_artifacts:
+          cmd: compile
+      - save_deps
+  dialyzer:
+    steps:
+      - install_ca_certs
+      - checkout
+      - restore_cache:
+          keys:
+            - erlang-plt
+      - restore_deps
+      - run:
+          command: rebar3 dialyzer
+      - store_crash_artifacts:
+          cmd: compile
+      - save_cache:
+          key: erlang-plt
+          paths:
+            - ~/.cache/rebar3/rebar3_*_plt
+  xref:
+    steps:
+      - install_ca_certs
+      - checkout
+      - restore_deps
+      - run:
+          command: rebar3 xref
+      - store_crash_artifacts:
+          cmd: xref
+  ct:
+    steps:
+      - install_ca_certs
+      - checkout
+      - restore_deps
+      - run:
+          command: rebar3 ct
+      - store_crash_artifacts:
+          cmd: ct
+      - store_test_results:
+          path: ~/project/_build/test/logs/
+      - store_artifacts:
+          path: ~/project/_build/test/logs
+          destination: common_test
+
+jobs:
+  compile:
+    executor: docker-erlang
+    steps:
+      - compile
+
+  dialyzer:
+    executor: docker-erlang
+    steps:
+      - dialyzer
+
+  xref:
+    executor: docker-erlang
+    steps:
+      - xref
+
+  ct:
+    executor: docker-erlang
+    steps:
+      - ct
