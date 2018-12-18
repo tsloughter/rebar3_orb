@@ -1,6 +1,6 @@
 version: 2.1
 
-description: Orb for building and testing rebar3 projects
+description: Orb for building and testing rebar3 projects.
 
 examples:
   common_test:
@@ -24,6 +24,7 @@ executors:
   docker-erlang:
     parameters:
       version:
+        description: The Erlang/OTP docker image tag to use.
         type: string
         default: "21.2-alpine"
     docker:
@@ -32,9 +33,15 @@ executors:
 
 commands:
   install_ca_certs:
+    parameters:
+      pkg_install_cmd:
+        description: |
+          The command for installing a package on the distro being used. The default is apk for Alpine, which is the default tag used in the executor.
+        type: string
+        default: apk add --no-cache
     steps:
       - run:
-          command: apk add --no-cache ca-certificates
+          command: <<parameters.pkg_install_cmd>> ca-certificates
   restore_deps:
     steps:
       - restore_cache:
@@ -57,7 +64,7 @@ commands:
   store_crash_artifacts:
     parameters:
       cmd:
-        description: unique name, like the command that is running, in case there are multiple dumps
+        description: A unique name, like the command that is running, in case there are multiple dumps.
         type: string
     steps:
       - store_artifacts:
