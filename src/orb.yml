@@ -3,13 +3,14 @@ version: 2.1
 description: Orb for building and testing rebar3 projects
 
 examples:
-  common_tests:
-    description: Run common test suites of project
+  common_test:
+    description: |
+      Run common test suites of project. Be sure to add `{ct_opts, [{ct_hooks, [cth_surefire]}]}.` to your project's `rebar.config` so JUnit XML metadata for the test results is able to be collected and used by CircleCI.
     usage:
       version: 2.1
 
       orbs:
-        rebar3: tsloughter/rebar3@0.1.0
+        rebar3: tsloughter/rebar3@0.1.1
 
       workflows:
         build-test:
