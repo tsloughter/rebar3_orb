@@ -21,7 +21,7 @@ examples:
                   - rebar3/compile
 
 executors:
-  docker-erlang:
+  erlang:
     parameters:
       version:
         description: The Erlang/OTP docker image tag to use.
@@ -33,6 +33,8 @@ executors:
 
 commands:
   install_ca_certs:
+    description: |
+      The package ca-certificates is required for CircleCI to store caches and it is currently removed from the final Erlang docker image, so we must install it at the start of a job for now.
     parameters:
       pkg_install_cmd:
         description: |
@@ -42,14 +44,21 @@ commands:
     steps:
       - run:
           command: <<parameters.pkg_install_cmd>> ca-certificates
-  restore_deps:
+
+  with_deps_cache:
+    description: |
+      Run steps with the dependency cache restored and then save it again if changed.
+    parameters:
+      steps:
+        type: steps
     steps:
       - restore_cache:
           keys:
             - rebar-lock-{{ checksum "rebar.lock" }}
             - hex-packages
-  save_deps:
-    steps:
+
+      - steps: << parameters.steps >>
+
       - save_cache:
           key: rebar-lock-{{ checksum "rebar.lock" }}
           paths:
@@ -61,7 +70,27 @@ commands:
           paths:
             - ~/.cache/rebar3/hex/default/packages
 
-  store_crash_artifacts:
+  with_plt_cache:
+    description: |
+      Run steps with the plt cache restored and then save it again.
+    parameters:
+      steps:
+        type: steps
+    steps:
+      - restore_cache:
+          keys:
+            - erlang-plt
+
+      - steps: << parameters.steps >>
+
+      - save_cache:
+          key: erlang-plt
+          paths:
+            - ~/.cache/rebar3/rebar3_*_plt
+
+  on_fail_store_crashdump:
+    description: |
+      If a job fails this command will copy the rebar3 crashdump file to the artifacts store so you can view it after a failed job.
     parameters:
       cmd:
         description: A unique name, like the command that is running, in case there are multiple dumps.
@@ -73,72 +102,79 @@ commands:
           when: on_fail
 
   compile:
+    description: |
+      Compile the project.
     steps:
-      - install_ca_certs
-      - checkout
-      - restore_deps
       - run:
           command: rebar3 compile
-      - store_crash_artifacts:
-          cmd: compile
-      - save_deps
+
   dialyzer:
+    description: |
+      Run dialyzer.
     steps:
-      - install_ca_certs
-      - checkout
-      - restore_cache:
-          keys:
-            - erlang-plt
-      - restore_deps
       - run:
           command: rebar3 dialyzer
-      - store_crash_artifacts:
-          cmd: compile
-      - save_cache:
-          key: erlang-plt
-          paths:
-            - ~/.cache/rebar3/rebar3_*_plt
+
   xref:
+    description: |
+      Run xref.
     steps:
-      - install_ca_certs
-      - checkout
-      - restore_deps
       - run:
           command: rebar3 xref
-      - store_crash_artifacts:
-          cmd: xref
   ct:
+    description: |
+      Run common test suites.
+    steps:
+      - run:
+          command: rebar3 ct
+
+jobs:
+  compile:
+    executor: erlang
     steps:
       - install_ca_certs
       - checkout
-      - restore_deps
-      - run:
-          command: rebar3 ct
-      - store_crash_artifacts:
+      - with_deps_cache:
+          steps:
+            - compile
+      - on_fail_store_crashdump:
+          cmd: compile
+
+  dialyzer:
+    executor: erlang
+    steps:
+      - install_ca_certs
+      - checkout
+      - with_deps_cache:
+          steps:
+            - with_plt_cache:
+                steps:
+                  - dialyzer
+      - on_fail_store_crashdump:
+          cmd: dialyzer
+
+  xref:
+    executor: erlang
+    steps:
+      - install_ca_certs
+      - checkout
+      - with_deps_cache:
+          steps:
+            - xref
+      - on_fail_store_crashdump:
+          cmd: xref
+  ct:
+    executor: erlang
+    steps:
+      - install_ca_certs
+      - checkout
+      - with_deps_cache:
+          steps:
+            - ct
+      - on_fail_store_crashdump:
           cmd: ct
       - store_test_results:
           path: ~/project/_build/test/logs/
       - store_artifacts:
           path: ~/project/_build/test/logs
           destination: common_test
-
-jobs:
-  compile:
-    executor: docker-erlang
-    steps:
-      - compile
-
-  dialyzer:
-    executor: docker-erlang
-    steps:
-      - dialyzer
-
-  xref:
-    executor: docker-erlang
-    steps:
-      - xref
-
-  ct:
-    executor: docker-erlang
-    steps:
-      - ct
