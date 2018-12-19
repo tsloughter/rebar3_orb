@@ -34,3 +34,9 @@ workflows:
 The workflow when run by CircleCI:
 
 ![workflow](workflow.png)
+
+Common Test artifacts that get stored for viewing after a run:
+
+![artifacts](artifacts.png)
+
+
