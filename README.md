@@ -14,7 +14,7 @@ Example CircleCI config (`.circleci/config.yml`) for using this Orb:
 version: 2.1
 
 orbs:
-    rebar3: tsloughter/rebar3@0.1.1
+    rebar3: tsloughter/rebar3@0.3.0
 
 workflows:
   build-test:
