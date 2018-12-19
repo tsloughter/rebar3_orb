@@ -16,6 +16,12 @@ examples:
         build-test:
           jobs:
             - rebar3/compile
+            - rebar3/xref:
+                requires:
+                  - rebar3/compile
+            - rebar3/dialyzer:
+                requires:
+                  - rebar3/compile
             - rebar3/ct:
                 requires:
                   - rebar3/compile

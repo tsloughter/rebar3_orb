@@ -8,7 +8,7 @@ Be sure to include the `cth_surefire` common test hook in `rebar.config`. This h
 {ct_opts, [{ct_hooks, [cth_surefire]}]}.
 ```
 
-Example CircleCI config for using this Orb:
+Example CircleCI config (`.circleci/config.yml`) for using this Orb:
 
 ``` yaml
 version: 2.1
@@ -20,7 +20,17 @@ workflows:
   build-test:
     jobs:
       - rebar3/compile
+      - rebar3/xref:
+          requires:
+            - rebar3/compile
+      - rebar3/dialyzer:
+          requires:
+            - rebar3/compile
       - rebar3/ct:
           requires:
             - rebar3/compile
 ```
+
+The workflow when run by CircleCI:
+
+![workflow](workflow.png)
