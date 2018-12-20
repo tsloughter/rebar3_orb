@@ -10,7 +10,7 @@ examples:
       version: 2.1
 
       orbs:
-        rebar3: tsloughter/rebar3@0.4.0
+        rebar3: tsloughter/rebar3@0.5.1
 
       workflows:
         build-test:
