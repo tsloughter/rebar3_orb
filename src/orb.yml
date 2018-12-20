@@ -28,6 +28,9 @@ examples:
             - rebar3/ct:
                 requires:
                   - rebar3/compile
+            - rebar3/cover:
+                requires:
+                  - rebar3/ct
 
 executors:
   erlang:
@@ -151,6 +154,13 @@ commands:
       - run:
           command: rebar3 lint
 
+  cover:
+    description: |
+      Run cover.
+    steps:
+      - run:
+          command: rebar3 cover
+
 jobs:
   compile:
     executor: erlang
@@ -182,6 +192,11 @@ jobs:
             - eunit
       - on_fail_store_crashdump:
           cmd: eunit
+      # for cover
+      - persist_to_workspace:
+          root: ~/project/
+          paths:
+            - _build/test/cover
   dialyzer:
     executor: erlang
     steps:
@@ -219,3 +234,24 @@ jobs:
       - store_artifacts:
           path: ~/project/_build/test/logs
           destination: common_test
+
+      # for cover
+      - persist_to_workspace:
+          root: ~/project/
+          paths:
+            - _build/test/cover
+  cover:
+    executor: erlang
+    steps:
+      - install_ca_certs
+      - checkout
+      - attach_workspace:
+          at: ~/project/
+      - with_deps_cache:
+          steps:
+            - cover
+      - on_fail_store_crashdump:
+          cmd: cover
+      - store_artifacts:
+          path: ~/project/_build/test/cover
+          destination: cover
