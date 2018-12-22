@@ -250,6 +250,10 @@ jobs:
       - with_deps_cache:
           steps:
             - cover
+      - persist_to_workspace:
+          root: ~/project/
+          paths:
+            - _build/test/cover
       - on_fail_store_crashdump:
           cmd: cover
       - store_artifacts:
