@@ -91,13 +91,15 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - erlang-plt
+            - erlang-plt-{{ checksum "rebar.lock" }}
 
       - steps: << parameters.steps >>
 
       - save_cache:
-          key: erlang-plt
+          # need a better key to use since it should be based on the otp version as well
+          key: erlang-plt-{{ checksum "rebar.lock" }}
           paths:
+            - ~/project/_build/default/rebar3_*_plt
             - ~/.cache/rebar3/rebar3_*_plt
 
   on_fail_store_crashdump:
