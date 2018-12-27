@@ -63,16 +63,19 @@ commands:
     parameters:
       steps:
         type: steps
+      cache_key_postfix:
+        type: string
+        default: ""
     steps:
       - restore_cache:
           keys:
-            - rebar-lock-{{ checksum "rebar.lock" }}
+            - rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>
             - hex-packages
 
-      - steps: << parameters.steps >>
+      - steps: <<parameters.steps>>
 
       - save_cache:
-          key: rebar-lock-{{ checksum "rebar.lock" }}
+          key: rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>
           paths:
             - ~/project/_build/default/lib
             - ~/project/_build/default/plugins
