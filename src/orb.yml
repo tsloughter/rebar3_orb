@@ -35,28 +35,19 @@ examples:
 executors:
   erlang:
     parameters:
-      version:
-        description: The Erlang/OTP docker image tag to use.
+      image:
+        description: The Erlang/OTP docker image to use.
         type: string
-        default: "21.2-alpine"
+        default: "circleci/erlang"
+      tag:
+        description: The docker tag to use.
+        type: string
+        default: "21.2"
     docker:
-      - image: erlang:<<parameters.version>>
+      - image: <<parameters.image>>:<<parameters.tag>>
         entrypoint: ["/bin/sh"]
 
 commands:
-  install_ca_certs:
-    description: |
-      The package ca-certificates is required for CircleCI to store caches and it is currently removed from the final Erlang docker image, so we must install it at the start of a job for now.
-    parameters:
-      pkg_install_cmd:
-        description: |
-          The command for installing a package on the distro being used. The default is apk for Alpine, which is the default tag used in the executor.
-        type: string
-        default: apk add --no-cache
-    steps:
-      - run:
-          command: <<parameters.pkg_install_cmd>> ca-certificates
-
   with_deps_cache:
     description: |
       Run steps with the dependency cache restored and then save it again if changed.
@@ -170,7 +161,6 @@ jobs:
   compile:
     executor: erlang
     steps:
-      - install_ca_certs
       - checkout
       - with_deps_cache:
           steps:
@@ -180,7 +170,6 @@ jobs:
   lint:
     executor: erlang
     steps:
-      - install_ca_certs
       - checkout
       - with_deps_cache:
           steps:
@@ -190,7 +179,6 @@ jobs:
   eunit:
     executor: erlang
     steps:
-      - install_ca_certs
       - checkout
       - with_deps_cache:
           steps:
@@ -205,7 +193,6 @@ jobs:
   dialyzer:
     executor: erlang
     steps:
-      - install_ca_certs
       - checkout
       - with_deps_cache:
           steps:
@@ -217,7 +204,6 @@ jobs:
   xref:
     executor: erlang
     steps:
-      - install_ca_certs
       - checkout
       - with_deps_cache:
           steps:
@@ -227,7 +213,6 @@ jobs:
   ct:
     executor: erlang
     steps:
-      - install_ca_certs
       - checkout
       - with_deps_cache:
           steps:
@@ -248,7 +233,6 @@ jobs:
   cover:
     executor: erlang
     steps:
-      - install_ca_certs
       - checkout
       - attach_workspace:
           at: ~/project/
