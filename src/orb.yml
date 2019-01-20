@@ -42,7 +42,72 @@ executors:
     docker:
       - image: erlang:<<parameters.version>>
         entrypoint: ["/bin/sh"]
-
+  r-18:
+    docker:
+      - image: erlang:18
+        entrypoint: ["/bin/sh"]
+  r-18_3:
+    docker:
+      - image: erlang:18.3
+        entrypoint: ["/bin/sh"]
+  r-18_3_4:
+    docker:
+      - image: erlang:18.3.4
+        entrypoint: ["/bin/sh"]
+  r-18_3_4_11:
+    docker:
+      - image: erlang:18.3.4.11
+        entrypoint: ["/bin/sh"]
+  r-19:
+    docker:
+      - image: erlang:19
+        entrypoint: ["/bin/sh"]
+  r-19_3:
+    docker:
+      - image: erlang:19.3
+        entrypoint: ["/bin/sh"]
+  r-19_3_6:
+    docker:
+      - image: erlang:19.3.6
+        entrypoint: ["/bin/sh"]
+  r-19_3_6_13:
+    docker:
+      - image: erlang:19.3.6.13
+        entrypoint: ["/bin/sh"]
+  r-20:
+    docker:
+      - image: erlang:20
+        entrypoint: ["/bin/sh"]
+  r-20_3:
+    docker:
+      - image: erlang:20.3
+        entrypoint: ["/bin/sh"]
+  r-20_3_8:
+    docker:
+      - image: erlang:20.3.8
+        entrypoint: ["/bin/sh"]
+  r-20_3_8_17:
+    docker:
+      - image: erlang:20.2.8.17
+        entrypoint: ["/bin/sh"]
+  r-21:
+    docker:
+      - image: erlang:21
+        entrypoint: ["/bin/sh"]
+  r-21_2:
+    docker:
+      - image: erlang:21.2
+        entrypoint: ["/bin/sh"]
+  r-21_2_2:
+    docker:
+      - image: erlang:21.2.2
+        entrypoint: ["/bin/sh"]
+  r-21_2_3:
+    docker:
+      - image: erlang:21.2.3
+        entrypoint: ["/bin/sh"]
+   
+ 
 commands:
   install_ca_certs:
     description: |
@@ -165,7 +230,11 @@ commands:
 
 jobs:
   compile:
-    executor: erlang
+    parameters:
+      otp:
+        type: executor
+        default: erlang
+    executor: << parameters.otp >>
     steps:
       - install_ca_certs
       - checkout
@@ -185,7 +254,11 @@ jobs:
       - on_fail_store_crashdump:
           cmd: lint
   eunit:
-    executor: erlang
+    parameters:
+      otp:
+        type: executor
+        default: erlang
+    executor: << parameters.otp >>
     steps:
       - install_ca_certs
       - checkout
@@ -200,7 +273,11 @@ jobs:
           paths:
             - _build/test/
   dialyzer:
-    executor: erlang
+    parameters:
+      otp:
+        type: executor
+        default: erlang
+    executor: << parameters.otp >>
     steps:
       - install_ca_certs
       - checkout
@@ -212,7 +289,11 @@ jobs:
       - on_fail_store_crashdump:
           cmd: dialyzer
   xref:
-    executor: erlang
+    parameters:
+      otp:
+        type: executor
+        default: erlang
+    executor: << parameters.otp >>
     steps:
       - install_ca_certs
       - checkout
@@ -222,7 +303,11 @@ jobs:
       - on_fail_store_crashdump:
           cmd: xref
   ct:
-    executor: erlang
+    parameters:
+      otp:
+        type: executor
+        default: executor
+    executor: << parameters.otp >>
     steps:
       - install_ca_certs
       - checkout
@@ -243,7 +328,11 @@ jobs:
           paths:
             - _build/test/
   cover:
-    executor: erlang
+    parameters:
+      otp:
+        type: executor
+        default: erlang
+    executor: << parameters.otp >>
     steps:
       - install_ca_certs
       - checkout
