@@ -6,11 +6,13 @@ examples:
   common_test:
     description: |
       Run common test suites of project. Be sure to add `{ct_opts, [{ct_hooks, [cth_surefire]}]}.` to your project's `rebar.config` so JUnit XML metadata for the test results is able to be collected and used by CircleCI.
+
+      The hex package cache `~/.cache/rebar3/hex`, dialyzer plt, default lib and plugins directories (under `_build/default/`) are cached for future runs. The cache keys have an environment variable `$CACHE_VERSION` appended to them so that you can clear the cache by incrementing (really just changing it to anything different) the value.
     usage:
       version: 2.1
 
       orbs:
-        rebar3: tsloughter/rebar3@0.5.4
+        rebar3: tsloughter/rebar3@0.6.3
 
       workflows:
         build-test:
@@ -60,19 +62,19 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>
-            - hex-packages
+            - rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>-{{ .Environment.CACHE_VERSION }}
+            - hex-packages-{{ .Environment.CACHE_VERSION }}
 
       - steps: <<parameters.steps>>
 
       - save_cache:
-          key: rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>
+          key: rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>-{{ .Environment.CACHE_VERSION }}
           paths:
             - ~/project/_build/default/lib
             - ~/project/_build/default/plugins
 
       - save_cache:
-          key: hex-packages
+          key: hex-packages-{{ .Environment.CACHE_VERSION }}
           paths:
             - ~/.cache/rebar3/hex/default/packages
 
@@ -85,13 +87,13 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - erlang-plt-{{ checksum "rebar.lock" }}
+            - erlang-plt-{{ checksum "rebar.lock" }}-{{ .Environment.CACHE_VERSION }}
 
       - steps: << parameters.steps >>
 
       - save_cache:
           # need a better key to use since it should be based on the otp version as well
-          key: erlang-plt-{{ checksum "rebar.lock" }}
+          key: erlang-plt-{{ checksum "rebar.lock" }}-{{ .Environment.CACHE_VERSION }}
           paths:
             - ~/project/_build/default/rebar3_*_plt
             - ~/.cache/rebar3/rebar3_*_plt

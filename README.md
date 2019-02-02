@@ -8,13 +8,19 @@ Be sure to include the `cth_surefire` common test hook in `rebar.config`. This h
 {ct_opts, [{ct_hooks, [cth_surefire]}]}.
 ```
 
+## Clearing the Cache
+
+The hex package cache `~/.cache/rebar3/hex`, default lib and plugins directories (under `_build/default/`) are cached for future runs. The cache keys have an environment variable `$CACHE_VERSION` appended to them so that you can clear the cache by incrementing (really just changing it to anything different) the value. This can be done under the projects [`Build Settings` in the CircleCI UI](https://circleci.com/docs/2.0/env-vars/#setting-an-environment-variable-in-a-project).
+
+## Example
+
 Example CircleCI config (`.circleci/config.yml`) for using this Orb:
 
 ``` yaml
 version: 2.1
 
 orbs:
-    rebar3: tsloughter/rebar3@0.5.4
+    rebar3: tsloughter/rebar3@0.6.3
 
 workflows:
   build-test:
