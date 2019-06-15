@@ -12,7 +12,7 @@ examples:
       version: 2.1
 
       orbs:
-        rebar3: tsloughter/rebar3@0.6.3
+        rebar3: tsloughter/rebar3@0.6.4
 
       workflows:
         build-test:
@@ -44,7 +44,7 @@ executors:
       tag:
         description: The docker tag to use.
         type: string
-        default: "21.2"
+        default: "22.0.3"
     docker:
       - image: <<parameters.image>>:<<parameters.tag>>
         entrypoint: ["/bin/sh"]
