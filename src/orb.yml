@@ -159,9 +159,17 @@ commands:
       - run:
           command: rebar3 cover
 
+setup: &setup
+  parameters:
+    executor:
+      description: The executor to use for this job.
+      type: executor
+      default: erlang
+  executor: <<parameters.executor>>
+
 jobs:
   compile:
-    executor: erlang
+    <<: *setup
     steps:
       - checkout
       - with_deps_cache:
@@ -170,7 +178,7 @@ jobs:
       - on_fail_store_crashdump:
           cmd: compile
   lint:
-    executor: erlang
+    <<: *setup
     steps:
       - checkout
       - with_deps_cache:
@@ -179,7 +187,7 @@ jobs:
       - on_fail_store_crashdump:
           cmd: lint
   eunit:
-    executor: erlang
+    <<: *setup
     steps:
       - checkout
       - with_deps_cache:
@@ -193,7 +201,7 @@ jobs:
           paths:
             - _build/test/
   dialyzer:
-    executor: erlang
+    <<: *setup
     steps:
       - checkout
       - with_deps_cache:
@@ -204,7 +212,7 @@ jobs:
       - on_fail_store_crashdump:
           cmd: dialyzer
   xref:
-    executor: erlang
+    <<: *setup
     steps:
       - checkout
       - with_deps_cache:
@@ -213,7 +221,7 @@ jobs:
       - on_fail_store_crashdump:
           cmd: xref
   ct:
-    executor: erlang
+    <<: *setup
     steps:
       - checkout
       - with_deps_cache:
@@ -233,7 +241,7 @@ jobs:
           paths:
             - _build/test/
   cover:
-    executor: erlang
+    <<: *setup
     steps:
       - checkout
       - attach_workspace:
