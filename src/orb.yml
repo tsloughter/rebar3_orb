@@ -62,13 +62,13 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>-{{ .Environment.CACHE_VERSION }}
+            - rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>-{{ .Environment.OTP_VERSION }}-{{ .Environment.CACHE_VERSION }}
             - hex-packages-{{ .Environment.CACHE_VERSION }}
 
       - steps: <<parameters.steps>>
 
       - save_cache:
-          key: rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>-{{ .Environment.CACHE_VERSION }}
+          key: rebar-lock-{{ checksum "rebar.lock" }}<<parameters.cache_key_postfix>>-{{ .Environment.OTP_VERSION }}-{{ .Environment.CACHE_VERSION }}
           paths:
             - ~/project/_build/default/lib
             - ~/project/_build/default/plugins
@@ -87,13 +87,13 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - erlang-plt-{{ checksum "rebar.lock" }}-{{ .Environment.CACHE_VERSION }}
+            - erlang-plt-{{ checksum "rebar.lock" }}-{{ .Environment.OTP_VERSION }}-{{ .Environment.CACHE_VERSION }}
 
       - steps: << parameters.steps >>
 
       - save_cache:
           # need a better key to use since it should be based on the otp version as well
-          key: erlang-plt-{{ checksum "rebar.lock" }}-{{ .Environment.CACHE_VERSION }}
+          key: erlang-plt-{{ checksum "rebar.lock" }}-{{ .Environment.OTP_VERSION }}-{{ .Environment.CACHE_VERSION }}
           paths:
             - ~/project/_build/default/rebar3_*_plt
             - ~/.cache/rebar3/rebar3_*_plt
