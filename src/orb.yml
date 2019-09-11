@@ -48,6 +48,8 @@ executors:
     docker:
       - image: <<parameters.image>>:<<parameters.tag>>
         entrypoint: ["/bin/sh"]
+        environment:
+          OTP_VERSION: <<parameters.tag>>
 
 commands:
   with_deps_cache:
